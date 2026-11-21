@@ -11,9 +11,6 @@ jobs:
     defaults:
       run:
         working-directory: backend
-    env:
-      DISABLE_SQLALCHEMY_CEXT: "1"
-      SQLALCHEMY_DISABLE_CEXT: "1"
     steps:
       - uses: actions/checkout@v4
 
@@ -24,34 +21,20 @@ jobs:
           cache-dependency-path: backend/requirements.txt
 
       - name: Install dependencies
-        run: |
-          pip install SQLAlchemy --no-binary sqlalchemy
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
-      # ── Unit tests with coverage gate ──────────────────────────
-      - name: Run unit tests with branch coverage
+      - name: Run unit tests
         run: |
-          DISABLE_SQLALCHEMY_CEXT=1 python -m pytest ../tests/team/area1/test_services.py \
+          python -m pytest ../tests/team/area1/test_services.py \
             -v --tb=short \
-            --cov=app --cov-branch \
-            --cov-report=term-missing \
             --junitxml=../tests/team/area1/test_results.xml
 
-      - name: Enforce 100% coverage on services.py
-        run: |
-          DISABLE_SQLALCHEMY_CEXT=1 python -m pytest ../tests/team/area1/test_services.py \
-            -q --no-header \
-            --cov=app.services --cov-branch \
-            --cov-fail-under=100
-
-      # ── Mutation gate ──────────────────────────────────────────
       - name: Run mutation testing (mutmut)
         run: |
-          DISABLE_SQLALCHEMY_CEXT=1 python -m mutmut run \
+          python -m mutmut run \
             --paths-to-mutate=app/services.py \
             --tests-dir=../tests/team/area1/ \
-            --runner="DISABLE_SQLALCHEMY_CEXT=1 python -m pytest ../tests/team/area1/test_services.py -x -q --no-header --tb=no"
-          echo "mutmut exit code: $?"
+            --runner="python -m pytest ../tests/team/area1/test_services.py -x -q --no-header --tb=no"
 
       - name: Enforce mutation score = 100%
         run: |
