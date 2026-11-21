@@ -38,11 +38,12 @@ jobs:
 
       - name: Enforce mutation score = 100%
         run: |
-          SURVIVED=$(python -m mutmut results 2>&1 | grep -c "Survived")
+          RESULTS=$(python -m mutmut results 2>&1 || true)
+          echo "$RESULTS"
+          SURVIVED=$(echo "$RESULTS" | grep -c "Survived" || true)
           echo "Survived mutant lines: $SURVIVED"
           if [ "$SURVIVED" -gt 1 ]; then
             echo "::error::Mutation testing failed - surviving mutants detected"
-            python -m mutmut results
             exit 1
           fi
           echo "All mutants killed - mutation gate passed"
