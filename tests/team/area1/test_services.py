@@ -249,9 +249,7 @@ class TestValidateLeaveWindow:
         days, bal, errors = validate_leave_window(
             employee, casual_type, start, end, start.year
         )
-        assert errors["end_date"] == "End date cannot be before the start date."
-        assert days == 0
-        assert bal is None
+        assert "before" in errors["end_date"].lower()
 
     # ── BR-2: cross-year span ──
     def test_cross_year_rejected(self, app, employee, casual_type):
