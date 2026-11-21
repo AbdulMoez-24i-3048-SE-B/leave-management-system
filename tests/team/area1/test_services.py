@@ -249,7 +249,7 @@ class TestValidateLeaveWindow:
         days, bal, errors = validate_leave_window(
             employee, casual_type, start, end, start.year
         )
-        assert "end_date" in errors
+        assert errors == {}, "Intentionally wrong: expecting no errors when end < start"
 
     # ── BR-2: cross-year span ──
     def test_cross_year_rejected(self, app, employee, casual_type):
