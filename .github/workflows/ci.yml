@@ -12,6 +12,7 @@ jobs:
       run:
         working-directory: backend
     env:
+      DISABLE_SQLALCHEMY_CEXT: "1"
       SQLALCHEMY_DISABLE_CEXT: "1"
     steps:
       - uses: actions/checkout@v4
@@ -28,20 +29,26 @@ jobs:
       # ── Unit tests with coverage gate ──────────────────────────
       - name: Run unit tests with branch coverage
         run: |
-          python -m pytest ../tests/team/area1/test_services.py \
+          DISABLE_SQLALCHEMY_CEXT=1 python -m pytest ../tests/team/area1/test_services.py \
             -v --tb=short \
-            --cov=app.services --cov-branch \
+            --cov=app --cov-branch \
             --cov-report=term-missing \
-            --cov-fail-under=100 \
             --junitxml=../tests/team/area1/test_results.xml
+
+      - name: Enforce 100% coverage on services.py
+        run: |
+          DISABLE_SQLALCHEMY_CEXT=1 python -m pytest ../tests/team/area1/test_services.py \
+            -q --no-header \
+            --cov=app.services --cov-branch \
+            --cov-fail-under=100
 
       # ── Mutation gate ──────────────────────────────────────────
       - name: Run mutation testing (mutmut)
         run: |
-          python -m mutmut run \
+          DISABLE_SQLALCHEMY_CEXT=1 python -m mutmut run \
             --paths-to-mutate=app/services.py \
             --tests-dir=../tests/team/area1/ \
-            --runner="python -m pytest ../tests/team/area1/test_services.py -x -q --no-header --tb=no"
+            --runner="DISABLE_SQLALCHEMY_CEXT=1 python -m pytest ../tests/team/area1/test_services.py -x -q --no-header --tb=no"
           echo "mutmut exit code: $?"
 
       - name: Enforce mutation score = 100%
@@ -49,11 +56,11 @@ jobs:
           SURVIVED=$(python -m mutmut results 2>&1 | grep -c "Survived")
           echo "Survived mutant lines: $SURVIVED"
           if [ "$SURVIVED" -gt 1 ]; then
-            echo "::error::Mutation testing failed — surviving mutants detected"
+            echo "::error::Mutation testing failed - surviving mutants detected"
             python -m mutmut results
             exit 1
           fi
-          echo "All mutants killed — mutation gate passed"
+          echo "All mutants killed - mutation gate passed"
 
   frontend-build:
     runs-on: ubuntu-latest
