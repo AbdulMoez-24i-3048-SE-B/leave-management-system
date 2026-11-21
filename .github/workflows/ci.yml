@@ -24,7 +24,9 @@ jobs:
           cache-dependency-path: backend/requirements.txt
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install SQLAlchemy --no-binary sqlalchemy
+          pip install -r requirements.txt
 
       # ── Unit tests with coverage gate ──────────────────────────
       - name: Run unit tests with branch coverage
