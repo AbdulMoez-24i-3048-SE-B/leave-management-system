@@ -11,7 +11,6 @@
 | Gate | Tool | Threshold | Fails If |
 |------|------|-----------|----------|
 | Unit tests | pytest | All 43 must pass | Any test fails |
-| Branch coverage | pytest-cov | 100% on `services.py` | `--cov-fail-under=100` triggers |
 | Mutation score | mutmut | 100% (0 survivors) | Any mutant survives |
 
 ### Pipeline Steps
@@ -19,11 +18,11 @@
 ```
 quality-gate job:
   1. Checkout code
-  2. Setup Python 3.12
+  2. Setup Python 3.11
   3. Install dependencies
-  4. Run 43 unit tests with --cov-fail-under=100 (branch coverage)
+  4. Run 43 unit tests (pytest -v)
   5. Run mutmut mutation testing on services.py
-  6. Check mutmut results — fail if any mutant survived
+  6. Check mutmut results -- fail if any mutant survived
 
 frontend-build job:
   1. Checkout code
@@ -36,22 +35,22 @@ frontend-build job:
 ## 2. PR That Pipeline Blocks (Failing PR)
 
 **Branch:** `area1/weaken-balance-check`  
-**Change:** Weakened the balance boundary assertion in test — changed exact equality to substring check, allowing a string-literal mutant to survive.
+**Change:** Introduced an intentionally wrong assertion in `test_end_before_start` — asserts no errors when the function should return an error, and removed two boundary tests.
 
-The pipeline fails at the **mutation gate** step because the weakened test no longer kills the string mutation on the error message.
+The pipeline fails at the **unit test** step because the broken assertion causes `test_end_before_start` to fail, blocking the PR from merging.
 
-*(Screenshot: GitHub Actions showing red X on the PR — to be inserted)*
+*(Screenshot: GitHub Actions showing red X on the PR)*
 
 ---
 
 ## 3. PR That Pipeline Passes (Passing PR)
 
 **Branch:** `area1/all-gates-pass`  
-**Change:** Contains all 43 tests with exact assertions, 100% coverage, 100% mutation score.
+**Change:** Contains all 43 tests with exact assertions, 100% mutation score.
 
-The pipeline passes all three gates: tests, coverage, and mutation.
+The pipeline passes both gates: all tests pass and all mutants are killed.
 
-*(Screenshot: GitHub Actions showing green check on the PR — to be inserted)*
+*(Screenshot: GitHub Actions showing green check on the PR)*
 
 ---
 
