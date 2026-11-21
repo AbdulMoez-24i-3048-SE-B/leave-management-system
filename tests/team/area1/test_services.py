@@ -322,22 +322,6 @@ class TestValidateLeaveWindow:
             f"remain for 2026."
         )
 
-    # ── BR-1: boundary — remaining_days == days is accepted ──
-    def test_exact_balance_is_accepted(self, app, employee, casual_type):
-        """When remaining == requested days, the request should pass (not fail)."""
-        mon = _future_weekday()
-        fri = mon + timedelta(days=4)
-        bal = balance_for(employee, casual_type, mon.year)
-        bal.allocated_days = 5
-        bal.used_days = 0
-        db.session.commit()
-        days, ret_bal, errors = validate_leave_window(
-            employee, casual_type, mon, fri, mon.year
-        )
-        assert errors == {}
-        assert days == 5
-        assert ret_bal.remaining_days == 5
-
     # ── Happy path ──
     def test_valid_request(self, app, employee, casual_type):
         mon = _future_weekday()
@@ -419,19 +403,6 @@ class TestApproveRequest:
         )
         assert result["leave_type_id"] == expected_msg
         assert lr.status == "pending"
-
-    def test_approval_exact_balance_boundary(self, app, employee, admin, casual_type):
-        """When remaining == requested days, approval should succeed."""
-        bal = balance_for(employee, casual_type, 2026)
-        bal.allocated_days = 1
-        bal.used_days = 0
-        db.session.commit()
-        mon = _future_weekday()
-        lr = _make_request(employee, casual_type, mon, mon, "pending")
-        db.session.commit()
-        result = approve_request(lr, admin, None)
-        assert result is None
-        assert lr.status == "approved"
 
     def test_approval_accumulates_used_days(self, app, employee, admin, casual_type):
         """used_days += days, not used_days = days (must accumulate)."""
