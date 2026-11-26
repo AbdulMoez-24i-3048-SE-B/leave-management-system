@@ -1,0 +1,37 @@
+﻿MUTATION TESTING RESULTS — Area 1
+==================================
+Tool:    mutmut v2.5.1
+Target:  backend/app/services.py
+Tests:   tests/team/area1/test_services.py (43 tests)
+Date:    2026-11-26
+
+RESULTS
+-------
+Total mutants generated : 81
+Killed (detected)       : 81  [goal bucket]
+Survived                : 0
+Timeout                 : 0
+Suspicious              : 0
+Skipped                 : 0
+
+MUTATION SCORE: 81/81 = 100%
+
+LEGEND
+------
+Killed    - Test suite detected the mutation (good)
+Survived  - No test caught the change (bad — needs stronger tests)
+Timeout   - Mutant caused infinite loop
+Suspicious- Tests ran unusually slow
+
+CUSTOM OPERATORS
+----------------
+1. BalanceBoundaryMutator (BR-1)
+   Shifts emaining_days < days boundary by +1/-1
+   Result: custom mutant killed
+
+2. WeekendSkipMutator (BR-4)
+   Changes weekday() < 5 to < 4 or < 6
+   Result: custom mutant killed
+
+Full analysis: docs/mutation_analysis.md
+Custom operators: tests/team/area1/custom_mutators.py
